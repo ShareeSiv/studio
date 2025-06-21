@@ -12,6 +12,12 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import {
   Bot,
   FileText,
   Loader2,
@@ -155,22 +161,35 @@ export default function DocuChatPage() {
           <h1 className="font-headline text-2xl font-bold text-primary">Mitigate.AI</h1>
         </div>
         <nav className="p-4 space-y-2 flex-1">
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <Bot className="mr-3 h-5 w-5" /> Chatbot
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <CalendarDays className="mr-3 h-5 w-5" /> Daily
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <Book className="mr-3 h-5 w-5" /> Weekly
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <CalendarClock className="mr-3 h-5 w-5" /> Monthly
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <CalendarRange className="mr-3 h-5 w-5" /> Quarterly
-          </Button>
-        </nav>
+            <Button variant="ghost" className="w-full justify-start text-base font-normal">
+              <Bot className="mr-3 h-5 w-5" /> Chatbot
+            </Button>
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="time-period" className="border-b-0">
+                <AccordionTrigger className="flex items-center p-2 text-base font-normal hover:no-underline rounded-md hover:bg-accent hover:text-accent-foreground w-full justify-between">
+                  <span className="flex items-center">
+                    <Calendar className="mr-3 h-5 w-5" /> Time Period
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="pl-7 pt-2 space-y-1">
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <CalendarDays className="mr-3 h-5 w-5" /> Daily
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <Book className="mr-3 h-5 w-5" /> Weekly
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <CalendarClock className="mr-3 h-5 w-5" /> Monthly
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <CalendarRange className="mr-3 h-5 w-5" /> Quarterly
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </nav>
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
