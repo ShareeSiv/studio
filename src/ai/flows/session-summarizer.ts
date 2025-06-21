@@ -41,14 +41,14 @@ const summarizeSessionFlow = ai.defineFlow(
   },
   async (input) => {
     const agentUrl = process.env.VERTEX_AGENT_URL;
-    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+    if (!agentUrl) {
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
 
     const response = await fetch(agentUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionText: input.sessionText }),
+      body: JSON.stringify({ query: `Summarize this session: ${input.sessionText}` }),
     });
 
     if (!response.ok) {
@@ -58,10 +58,12 @@ const summarizeSessionFlow = ai.defineFlow(
 
     const data = await response.json();
 
-    if (!data.summary) {
-        throw new Error("The response from the Vertex AI Agent was missing the 'summary' field.");
+    const resultText = data.output?.text;
+    if (resultText === undefined) {
+      const responseDump = JSON.stringify(data, null, 2);
+      throw new Error(`The response from the Vertex AI Agent was missing the 'output.text' field. Response: ${responseDump}`);
     }
 
-    return { summary: data.summary };
+    return { summary: resultText };
   }
 );

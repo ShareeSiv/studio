@@ -38,17 +38,21 @@ const documentQAFlow = ai.defineFlow(
   },
   async (input) => {
     const agentUrl = process.env.VERTEX_AGENT_URL;
-    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+    if (!agentUrl) {
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
+
+    const query = `
+Please answer the following question based on the provided document.
+Question: ${input.question}
+Document: This document is provided as a data URI. Your tools should be able to process it.
+Data URI: ${input.pdfDataUri}
+`;
 
     const response = await fetch(agentUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pdfDataUri: input.pdfDataUri,
-        question: input.question,
-      }),
+      body: JSON.stringify({ query }),
     });
 
     if (!response.ok) {
@@ -58,10 +62,12 @@ const documentQAFlow = ai.defineFlow(
 
     const data = await response.json();
     
-    if (!data.answer) {
-      throw new Error("The response from the Vertex AI Agent was missing the 'answer' field.");
+    const resultText = data.output?.text;
+    if (resultText === undefined) {
+      const responseDump = JSON.stringify(data, null, 2);
+      throw new Error(`The response from the Vertex AI Agent was missing the 'output.text' field. Response: ${responseDump}`);
     }
     
-    return { answer: data.answer };
+    return { answer: resultText };
   }
 );

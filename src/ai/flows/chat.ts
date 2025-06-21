@@ -33,14 +33,14 @@ const chatFlow = ai.defineFlow(
   },
   async (input) => {
     const agentUrl = process.env.VERTEX_AGENT_URL;
-    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+    if (!agentUrl) {
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
 
     const response = await fetch(agentUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: input.prompt }),
+      body: JSON.stringify({ query: input.prompt }),
     });
 
     if (!response.ok) {
@@ -50,10 +50,12 @@ const chatFlow = ai.defineFlow(
 
     const data = await response.json();
     
-    if (!data.response) {
-      throw new Error("The response from the Vertex AI Agent was missing the 'response' field.");
+    const resultText = data.output?.text;
+    if (resultText === undefined) {
+      const responseDump = JSON.stringify(data, null, 2);
+      throw new Error(`The response from the Vertex AI Agent was missing the 'output.text' field. Response: ${responseDump}`);
     }
     
-    return { response: data.response };
+    return { response: resultText };
   }
 );
