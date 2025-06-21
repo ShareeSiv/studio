@@ -46,7 +46,7 @@ const chatFlow = ai.defineFlow(
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
        },
-      body: JSON.stringify({ query: input.prompt }),
+      body: JSON.stringify({ input: input.prompt }),
     });
 
     const responseText = await response.text();

@@ -54,7 +54,7 @@ const summarizeSessionFlow = ai.defineFlow(
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ query: `Summarize this session: ${input.sessionText}` }),
+      body: JSON.stringify({ input: `Summarize this session: ${input.sessionText}` }),
     });
 
     const responseText = await response.text();

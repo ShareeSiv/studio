@@ -58,7 +58,7 @@ Data URI: ${input.pdfDataUri}
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ query }),
+      body: JSON.stringify({ input: query }),
     });
 
     const responseText = await response.text();
