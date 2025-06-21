@@ -18,6 +18,12 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
   Bot,
   FileText,
   Loader2,
@@ -37,6 +43,9 @@ import {
   Globe,
   Map,
   MapPin,
+  User,
+  Settings,
+  HelpCircle,
 } from 'lucide-react';
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -163,7 +172,7 @@ export default function DocuChatPage() {
 
   return (
     <div className="flex h-screen bg-background text-foreground">
-      <aside className="w-64 flex-shrink-0 flex-col border-r bg-card hidden md:flex">
+      <aside className="w-64 flex-shrink-0 flex flex-col border-r bg-card hidden md:flex">
         <div className="p-4 border-b h-[61px] flex items-center">
           <h1 className="font-headline text-2xl font-bold text-primary">Mitigate.AI</h1>
         </div>
@@ -246,6 +255,35 @@ export default function DocuChatPage() {
               </AccordionItem>
             </Accordion>
           </nav>
+        <div className="p-2 border-t">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="w-full justify-start items-center gap-3 p-2 h-auto">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback>U</AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col items-start text-left">
+                    <p className="text-sm font-medium leading-none">User Name</p>
+                    <p className="text-xs leading-none text-muted-foreground">user@email.com</p>
+                </div>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 mb-2" side="top" align="start">
+                <DropdownMenuItem>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                    <HelpCircle className="mr-2 h-4 w-4" />
+                    <span>Help/User Guide</span>
+                </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
