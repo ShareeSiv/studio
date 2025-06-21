@@ -159,10 +159,11 @@ export default function DocuChatPage() {
       );
     } catch (error) {
       console.error(error);
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
       toast({
         variant: 'destructive',
         title: 'An error occurred',
-        description: 'Failed to get a response from the AI. Please try again.',
+        description: errorMessage,
       });
        setSessions(sessions.map(s => s.id === activeTab ? {...s, messages: s.messages.filter(m => m.id !== userMessage.id)} : s));
     } finally {

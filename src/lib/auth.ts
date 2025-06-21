@@ -25,9 +25,10 @@ export async function getGoogleAccessToken(): Promise<string> {
 
         return data.access_token;
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
         console.error('Error fetching access token from metadata server:', error);
         // Fallback or rethrow, depending on desired behavior.
         // For now, let's re-throw to make it clear that auth failed.
-        throw new Error(`Could not obtain Google Cloud access token. Original error: ${error}`);
+        throw new Error(`Could not obtain Google Cloud access token. Original error: ${message}`);
     }
 }

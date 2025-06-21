@@ -57,12 +57,18 @@ const summarizeSessionFlow = ai.defineFlow(
       body: JSON.stringify({ query: `Summarize this session: ${input.sessionText}` }),
     });
 
+    const responseText = await response.text();
     if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Vertex AI Agent request failed: ${response.statusText} - ${errorText}`);
+      throw new Error(`Vertex AI Agent request failed: ${response.statusText} - ${responseText}`);
     }
 
-    const data = await response.json();
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch (e) {
+        console.error("Failed to parse JSON from Vertex AI Agent response.", e);
+        throw new Error(`Failed to parse JSON from Vertex AI Agent. Raw response: ${responseText}`);
+    }
 
     const resultText = data.output?.text;
     if (resultText === undefined) {
