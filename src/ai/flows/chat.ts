@@ -25,25 +25,35 @@ export async function chat(input: ChatInput): Promise<ChatOutput> {
   return chatFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'chatPrompt',
-  input: {schema: ChatInputSchema},
-  output: {schema: ChatOutputSchema},
-  prompt: `You are a helpful AI assistant. Please provide a concise and helpful response to the user's prompt.
-
-User Prompt: {{{prompt}}}
-
-Your Response:`,
-});
-
 const chatFlow = ai.defineFlow(
   {
     name: 'chatFlow',
     inputSchema: ChatInputSchema,
     outputSchema: ChatOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const agentUrl = process.env.VERTEX_AGENT_URL;
+    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+      throw new Error('VERTEX_AGENT_URL environment variable not set.');
+    }
+
+    const response = await fetch(agentUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: input.prompt }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Vertex AI Agent request failed: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.response) {
+      throw new Error("The response from the Vertex AI Agent was missing the 'response' field.");
+    }
+    
+    return { response: data.response };
   }
 );

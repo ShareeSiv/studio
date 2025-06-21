@@ -33,27 +33,35 @@ export async function summarizeSession(
   return summarizeSessionFlow(input);
 }
 
-const summarizeSessionPrompt = ai.definePrompt({
-  name: 'summarizeSessionPrompt',
-  input: {schema: SummarizeSessionInputSchema},
-  output: {schema: SummarizeSessionOutputSchema},
-  prompt: `You are an AI assistant tasked with summarizing chat sessions.
-
-  Please provide a concise summary of the following chat session. Focus on the main topics discussed, key decisions made, and any important information exchanged.
-
-  Chat Session Text:
-  {{sessionText}}
-  `,
-});
-
 const summarizeSessionFlow = ai.defineFlow(
   {
     name: 'summarizeSessionFlow',
     inputSchema: SummarizeSessionInputSchema,
     outputSchema: SummarizeSessionOutputSchema,
   },
-  async input => {
-    const {output} = await summarizeSessionPrompt(input);
-    return output!;
+  async (input) => {
+    const agentUrl = process.env.VERTEX_AGENT_URL;
+    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+      throw new Error('VERTEX_AGENT_URL environment variable not set.');
+    }
+
+    const response = await fetch(agentUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionText: input.sessionText }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Vertex AI Agent request failed: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    if (!data.summary) {
+        throw new Error("The response from the Vertex AI Agent was missing the 'summary' field.");
+    }
+
+    return { summary: data.summary };
   }
 );

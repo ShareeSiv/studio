@@ -30,31 +30,38 @@ export async function documentQA(input: DocumentQAInput): Promise<DocumentQAOutp
   return documentQAFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'documentQAPrompt',
-  input: {schema: DocumentQAInputSchema},
-  output: {schema: DocumentQAOutputSchema},
-  prompt: `You are an expert in extracting information from PDF documents.
-
-You will be provided with a PDF document and a question.
-Your task is to answer the question based on the content of the document.
-
-Document:
-{{media url=pdfDataUri}}
-
-Question: {{{question}}}
-
-Answer:`, // Removed backticks
-});
-
 const documentQAFlow = ai.defineFlow(
   {
     name: 'documentQAFlow',
     inputSchema: DocumentQAInputSchema,
     outputSchema: DocumentQAOutputSchema,
   },
-  async input => {
-    const {output} = await prompt(input);
-    return output!;
+  async (input) => {
+    const agentUrl = process.env.VERTEX_AGENT_URL;
+    if (!agentUrl || agentUrl === 'YOUR_VERTEX_AGENT_URL_HERE') {
+      throw new Error('VERTEX_AGENT_URL environment variable not set.');
+    }
+
+    const response = await fetch(agentUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pdfDataUri: input.pdfDataUri,
+        question: input.question,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Vertex AI Agent request failed: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    
+    if (!data.answer) {
+      throw new Error("The response from the Vertex AI Agent was missing the 'answer' field.");
+    }
+    
+    return { answer: data.answer };
   }
 );
