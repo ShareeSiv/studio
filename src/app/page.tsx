@@ -4,15 +4,25 @@ import { useState, useRef, useMemo, type ChangeEvent } from 'react';
 import type { Session, Message } from '@/lib/types';
 import { documentQA } from '@/ai/flows/document-qa';
 import { useToast } from '@/hooks/use-toast';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Bot, FileText, Loader2, Plus, Send, User, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import {
+  Bot,
+  FileText,
+  Loader2,
+  Plus,
+  Send,
+  X,
+  Calendar,
+  CalendarDays,
+  CalendarClock,
+  CalendarRange,
+  Paperclip,
+} from 'lucide-react';
 
 const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -130,150 +140,180 @@ export default function DocuChatPage() {
         title: 'An error occurred',
         description: 'Failed to get a response from the AI. Please try again.',
       });
-       // remove the user message if AI fails
-       setSessions(sessions);
+       setSessions(sessions.map(s => s.id === activeTab ? {...s, messages: s.messages.filter(m => m.id !== userMessage.id)} : s));
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={setActiveTab} className="flex h-full flex-col">
-      <header className="border-b bg-card p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <h1 className="font-headline text-2xl font-bold text-primary">DocuChat</h1>
-          <nav>
+    <div className="flex h-screen bg-background text-foreground">
+      <aside className="w-64 flex-shrink-0 flex-col border-r bg-card hidden md:flex">
+        <div className="p-4 border-b h-[61px] flex items-center">
+          <h1 className="font-headline text-2xl font-bold text-primary">Mitigate.AI</h1>
+        </div>
+        <nav className="p-4 space-y-2 flex-1">
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <Bot className="mr-3 h-5 w-5" /> Chatbot
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <Calendar className="mr-3 h-5 w-5" /> Events
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <CalendarDays className="mr-3 h-5 w-5" /> Daily
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <Calendar className="mr-3 h-5 w-5" /> Weekly
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <CalendarClock className="mr-3 h-5 w-5" /> Monthly
+          </Button>
+          <Button variant="ghost" className="w-full justify-start text-base font-normal">
+            <CalendarRange className="mr-3 h-5 w-5" /> Quarterly
+          </Button>
+        </nav>
+      </aside>
+
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+          <header className="border-b bg-card p-2 flex-shrink-0">
             <TabsList>
               {sessions.map((session) => (
                 <TabsTrigger key={session.id} value={session.id}>
                   {session.name}
                 </TabsTrigger>
               ))}
-                <Button variant="ghost" size="icon" onClick={handleNewSession}>
-                  <Plus className="h-4 w-4" />
+              <Button variant="ghost" size="icon" onClick={handleNewSession}>
+                <Plus className="h-4 w-4" />
               </Button>
             </TabsList>
-          </nav>
-        </div>
-      </header>
-      <main className="flex-1 overflow-hidden">
-        {sessions.map((session) => (
-          <TabsContent key={session.id} value={session.id} className="h-full">
-            <div className="grid h-full md:grid-cols-3 md:gap-6 lg:gap-8 container mx-auto p-4 md:p-6">
-              
-              <div className="md:col-span-2 flex flex-col gap-6 h-full">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Upload Document</CardTitle>
-                    <CardDescription>Attach a PDF file to your prompt.</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    {pdfFile ? (
-                      <div className="flex items-center justify-between rounded-lg border p-3">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-6 w-6 text-primary" />
-                          <span className="font-medium">{pdfFile.name}</span>
-                        </div>
-                        <Button variant="ghost" size="icon" onClick={handleRemovePdf}>
-                          <X className="h-4 w-4" />
-                        </Button>
+          </header>
+
+          <main className="flex-1 overflow-hidden">
+            {sessions.map((session) => (
+              <TabsContent key={session.id} value={session.id} className="h-full m-0">
+                <div className="flex h-full">
+                  <div className="flex-1 p-6 overflow-y-auto">
+                    <ScrollArea className="h-full pr-4">
+                      <div className="space-y-6">
+                        {activeSession?.messages.filter((m) => m.role === 'assistant').length === 0 && !isLoading && (
+                           <div className="flex h-full items-center justify-center text-muted-foreground">
+                                <div className="text-center p-10">
+                                    <Bot size={48} className="mx-auto text-primary" />
+                                    <p className="mt-4 text-lg font-headline">AI responses will appear here</p>
+                                    <p className="text-sm">Upload a document and ask a question to get started.</p>
+                                </div>
+                            </div>
+                        )}
+                        {activeSession?.messages
+                          .filter((m) => m.role === 'assistant')
+                          .map((message) => (
+                          <div key={message.id} className="flex items-start gap-4">
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className='bg-accent text-accent-foreground'>
+                                <Bot className="h-4 w-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <Card className="flex-1 rounded-xl shadow-sm">
+                              <CardContent className="p-4">
+                                <p className="whitespace-pre-wrap">{message.text}</p>
+                              </CardContent>
+                            </Card>
+                          </div>
+                        ))}
+                        {isLoading && (
+                            <div className="flex items-start gap-4">
+                                <Avatar className="h-8 w-8">
+                                  <AvatarFallback className="bg-accent text-accent-foreground"><Bot className="h-4 w-4" /></AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 rounded-lg border p-4 bg-card flex items-center gap-2">
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">Thinking...</span>
+                                </div>
+                            </div>
+                        )}
                       </div>
-                    ) : (
-                      <>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          onChange={handleFileChange}
-                          accept="application/pdf"
-                          className="hidden"
-                          id="pdf-upload"
-                        />
-                        <Label
-                          htmlFor="pdf-upload"
-                          className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/50 bg-primary/5 p-8 text-center text-primary transition-colors hover:bg-primary/10"
-                        >
-                          <FileText className="h-8 w-8" />
-                          <span className="mt-2 font-medium">Click to upload PDF</span>
-                          <span className="text-xs text-muted-foreground">or drag and drop</span>
-                        </Label>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
-
-                <form onSubmit={handleSubmit} className="flex flex-col gap-2 flex-1">
-                  <Label htmlFor="prompt-input" className="font-headline text-lg">Your Prompt</Label>
-                  <div className="relative flex-1">
-                    <Textarea
-                      id="prompt-input"
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      placeholder="Ask a question about the document..."
-                      className="h-full resize-none pr-20"
-                      disabled={isLoading}
-                    />
-                    <Button type="submit" size="icon" className="absolute right-3 top-3" disabled={isLoading || !prompt.trim()}>
-                      {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                    </Button>
+                    </ScrollArea>
                   </div>
-                </form>
-              </div>
 
-              <aside className="hidden md:flex flex-col">
-                 <h2 className="font-headline text-xl font-semibold mb-4">Session History</h2>
-                <Card className="flex-1 overflow-hidden">
-                    <CardContent className="p-0 h-full">
-                        <ScrollArea className="h-full p-6">
-                            {activeSession?.messages.length === 0 ? (
-                                <div className="flex h-full items-center justify-center text-muted-foreground">
-                                    No messages yet.
-                                </div>
-                            ) : (
-                                <div className="space-y-6">
-                                    {activeSession?.messages.map((message) => (
-                                        <div key={message.id} className={cn("flex items-start gap-4", message.role === "user" ? "justify-start" : "justify-start")}>
-                                            <Avatar>
-                                                <AvatarImage />
-                                                <AvatarFallback className={cn(message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-accent text-accent-foreground')}>
-                                                    {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-                                                </AvatarFallback>
-                                            </Avatar>
-                                            <div className="flex-1 rounded-lg border p-4 bg-card w-full">
-                                                <div className="font-bold font-headline">
-                                                    {message.role === 'user' ? 'Your Prompt' : 'DocuChat'}
-                                                </div>
-                                                <p className="text-sm mt-1 whitespace-pre-wrap">{message.text}</p>
-                                                {message.role === 'user' && message.pdfName && (
-                                                    <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                                                        <FileText className="h-3 w-3" />
-                                                        <span>{message.pdfName}</span>
-                                                    </div>
-                                                )}
-                                            </div>
+                  <aside className="w-96 border-l flex-shrink-0 flex flex-col bg-card">
+                    <div className="p-4 border-b">
+                      <h2 className="font-headline text-lg font-semibold">{activeSession?.name}</h2>
+                    </div>
+                    <ScrollArea className="flex-1 p-4">
+                      <div className="space-y-4">
+                        {activeSession?.messages.filter((m) => m.role === 'user').length === 0 ? (
+                            <div className="text-center text-muted-foreground pt-10 px-4">
+                                Your previous prompts in this session will appear here.
+                            </div>
+                        ) : activeSession?.messages
+                            .filter((m) => m.role === 'user')
+                            .map((message) => (
+                           <Card key={message.id} className="bg-background shadow-sm">
+                            <CardContent className="p-3">
+                               <p className="font-medium text-sm">{message.text}</p>
+                               {message.pdfName && (
+                                   <div className="mt-2 text-xs text-muted-foreground flex items-center gap-1.5">
+                                       <FileText className="h-3 w-3" />
+                                       <span>{message.pdfName}</span>
+                                   </div>
+                               )}
+                               </CardContent>
+                           </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                    <div className="p-4 border-t mt-auto bg-card flex-shrink-0">
+                        <form onSubmit={handleSubmit} className="space-y-3">
+                            <div>
+                                <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileChange}
+                                accept="application/pdf"
+                                className="hidden"
+                                id="pdf-upload"
+                                />
+                                {pdfFile ? (
+                                    <div className="flex items-center justify-between rounded-md border p-2 bg-background text-sm">
+                                        <div className="flex items-center gap-2 truncate">
+                                        <FileText className="h-4 w-4 text-primary shrink-0" />
+                                        <span className="font-medium truncate">{pdfFile.name}</span>
                                         </div>
-                                    ))}
-                                    {isLoading && (
-                                      <div className="flex items-start gap-4">
-                                        <Avatar>
-                                          <AvatarImage />
-                                          <AvatarFallback className="bg-accent text-accent-foreground"><Bot className="h-5 w-5" /></AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1 rounded-lg border p-4 bg-card flex items-center gap-2">
-                                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                                          <span className="text-sm text-muted-foreground">Thinking...</span>
-                                        </div>
-                                      </div>
-                                    )}
-                                </div>
-                            )}
-                        </ScrollArea>
-                    </CardContent>
-                </Card>
-              </aside>
-            </div>
-          </TabsContent>
-        ))}
-      </main>
-    </Tabs>
+                                        <Button variant="ghost" size="icon" onClick={handleRemovePdf} className="h-6 w-6 shrink-0">
+                                        <X className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <Button type="button" variant="outline" className="w-full" onClick={() => fileInputRef.current?.click()}>
+                                        <Paperclip className="mr-2 h-4 w-4" />
+                                        Upload PDF
+                                    </Button>
+                                )}
+                            </div>
+                             <div className="relative">
+                                <Textarea
+                                id="prompt-input"
+                                value={prompt}
+                                onChange={(e) => setPrompt(e.target.value)}
+                                placeholder="Text input"
+                                className="resize-none pr-12"
+                                rows={3}
+                                disabled={isLoading}
+                                />
+                                <Button type="submit" size="icon" className="absolute right-2 bottom-2 h-8 w-8" disabled={isLoading || !prompt.trim()}>
+                                {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                        </form>
+                    </div>
+                  </aside>
+                </div>
+              </TabsContent>
+            ))}
+          </main>
+        </Tabs>
+      </div>
+    </div>
   );
 }

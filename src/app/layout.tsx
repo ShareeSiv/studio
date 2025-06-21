@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'DocuChat',
-  description: 'Chat with your documents using AI',
+  title: 'Mitigate.AI',
+  description: 'AI-powered mitigation assistance',
 };
 
 export default function RootLayout({
