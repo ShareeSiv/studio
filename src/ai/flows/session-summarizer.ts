@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { getGoogleAccessToken } from '@/lib/auth';
 import {z} from 'genkit';
 
 const SummarizeSessionInputSchema = z.object({
@@ -46,14 +45,9 @@ const summarizeSessionFlow = ai.defineFlow(
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
 
-    const accessToken = await getGoogleAccessToken();
-
     const response = await fetch(agentUrl, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query: `Summarize this session: ${input.sessionText}` }),
     });
 

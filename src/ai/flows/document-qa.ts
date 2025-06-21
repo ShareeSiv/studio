@@ -9,7 +9,6 @@
  */
 
 import {ai} from '@/ai/genkit';
-import { getGoogleAccessToken } from '@/lib/auth';
 import {z} from 'genkit';
 
 const DocumentQAInputSchema = z.object({
@@ -50,14 +49,9 @@ Document: This document is provided as a data URI. Your tools should be able to 
 Data URI: ${input.pdfDataUri}
 `;
     
-    const accessToken = await getGoogleAccessToken();
-
     const response = await fetch(agentUrl, {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ query }),
     });
 
