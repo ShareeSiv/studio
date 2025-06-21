@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getGoogleAccessToken } from '@/lib/auth';
 
 const DocumentQAInputSchema = z.object({
   pdfDataUri: z
@@ -42,6 +43,8 @@ const documentQAFlow = ai.defineFlow(
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
 
+    const accessToken = await getGoogleAccessToken();
+
     const query = `
 Please answer the following question based on the provided document.
 Question: ${input.question}
@@ -51,7 +54,10 @@ Data URI: ${input.pdfDataUri}
     
     const response = await fetch(agentUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
       body: JSON.stringify({ query }),
     });
 

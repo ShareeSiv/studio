@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { getGoogleAccessToken } from '@/lib/auth';
 
 const ChatInputSchema = z.object({
   prompt: z.string().describe("The user's prompt."),
@@ -36,10 +37,15 @@ const chatFlow = ai.defineFlow(
     if (!agentUrl) {
       throw new Error('VERTEX_AGENT_URL environment variable not set.');
     }
+    
+    const accessToken = await getGoogleAccessToken();
 
     const response = await fetch(agentUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+       },
       body: JSON.stringify({ query: input.prompt }),
     });
 
