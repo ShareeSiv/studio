@@ -3,6 +3,7 @@
 import { useState, useRef, useMemo, type ChangeEvent } from 'react';
 import type { Session, Message } from '@/lib/types';
 import { documentQA } from '@/ai/flows/document-qa';
+import { chat } from '@/ai/flows/chat';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ import {
   CalendarClock,
   CalendarRange,
   Paperclip,
+  Book,
 } from 'lucide-react';
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -91,14 +93,6 @@ export default function DocuChatPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!prompt.trim() || isLoading) return;
-    if (!pdfFile) {
-        toast({
-            variant: "destructive",
-            title: "PDF Required",
-            description: "Please upload a PDF document to ask questions about it.",
-        });
-        return;
-    }
 
     setIsLoading(true);
 
@@ -106,7 +100,7 @@ export default function DocuChatPage() {
       id: `msg-${Date.now()}`,
       role: 'user',
       text: prompt,
-      pdfName: pdfFile.name,
+      pdfName: pdfFile?.name,
     };
 
     const updatedSessions = sessions.map((s) =>
@@ -116,16 +110,24 @@ export default function DocuChatPage() {
     setPrompt('');
 
     try {
-      const pdfDataUri = await fileToDataUri(pdfFile);
-      const result = await documentQA({
-        pdfDataUri,
-        question: prompt,
-      });
+      let resultText: string;
+
+      if (pdfFile) {
+        const pdfDataUri = await fileToDataUri(pdfFile);
+        const result = await documentQA({
+          pdfDataUri,
+          question: prompt,
+        });
+        resultText = result.answer;
+      } else {
+        const result = await chat({ prompt });
+        resultText = result.response;
+      }
 
       const assistantMessage: Message = {
         id: `msg-${Date.now()}-ai`,
         role: 'assistant',
-        text: result.answer,
+        text: resultText,
       };
 
       setSessions((currentSessions) =>
@@ -157,13 +159,10 @@ export default function DocuChatPage() {
             <Bot className="mr-3 h-5 w-5" /> Chatbot
           </Button>
           <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <Calendar className="mr-3 h-5 w-5" /> Events
-          </Button>
-          <Button variant="ghost" className="w-full justify-start text-base font-normal">
             <CalendarDays className="mr-3 h-5 w-5" /> Daily
           </Button>
           <Button variant="ghost" className="w-full justify-start text-base font-normal">
-            <Calendar className="mr-3 h-5 w-5" /> Weekly
+            <Book className="mr-3 h-5 w-5" /> Weekly
           </Button>
           <Button variant="ghost" className="w-full justify-start text-base font-normal">
             <CalendarClock className="mr-3 h-5 w-5" /> Monthly
@@ -201,7 +200,7 @@ export default function DocuChatPage() {
                                 <div className="text-center p-10">
                                     <Bot size={48} className="mx-auto text-primary" />
                                     <p className="mt-4 text-lg font-headline">AI responses will appear here</p>
-                                    <p className="text-sm">Upload a document and ask a question to get started.</p>
+                                    <p className="text-sm">Ask a question to get started, or upload a document to ask questions about it.</p>
                                 </div>
                             </div>
                         )}
