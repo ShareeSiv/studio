@@ -30,6 +30,13 @@ import {
   CalendarRange,
   Paperclip,
   Book,
+  Landmark,
+  Users,
+  Scale,
+  DollarSign,
+  Globe,
+  Map,
+  MapPin,
 } from 'lucide-react';
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -184,6 +191,55 @@ export default function DocuChatPage() {
                     </Button>
                     <Button variant="ghost" className="w-full justify-start text-base font-normal">
                       <CalendarRange className="mr-3 h-5 w-5" /> Quarterly
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="events" className="border-b-0">
+                <AccordionTrigger className="flex items-center p-2 text-base font-normal hover:no-underline rounded-md hover:bg-accent hover:text-accent-foreground w-full justify-between">
+                  <span className="flex items-center">
+                    <Landmark className="mr-3 h-5 w-5" /> Events
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="pl-7 pt-2 space-y-1">
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <Users className="mr-3 h-5 w-5" /> Social
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <Scale className="mr-3 h-5 w-5" /> Legal
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <DollarSign className="mr-3 h-5 w-5" /> Economical
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <Globe className="mr-3 h-5 w-5" /> Geopolitical
+                    </Button>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+              <AccordionItem value="region" className="border-b-0">
+                <AccordionTrigger className="flex items-center p-2 text-base font-normal hover:no-underline rounded-md hover:bg-accent hover:text-accent-foreground w-full justify-between">
+                  <span className="flex items-center">
+                    <Map className="mr-3 h-5 w-5" /> Region
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="pl-7 pt-2 space-y-1">
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <MapPin className="mr-3 h-5 w-5" /> Europe
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <MapPin className="mr-3 h-5 w-5" /> Asia
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <MapPin className="mr-3 h-5 w-5" /> Africa
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <MapPin className="mr-3 h-5 w-5" /> Americas
+                    </Button>
+                    <Button variant="ghost" className="w-full justify-start text-base font-normal">
+                      <MapPin className="mr-3 h-5 w-5" /> Australasia
                     </Button>
                   </div>
                 </AccordionContent>
