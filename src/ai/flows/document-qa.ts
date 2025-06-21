@@ -44,13 +44,6 @@ const documentQAFlow = ai.defineFlow(
     }
 
     const accessToken = await getGoogleAccessToken();
-
-    const query = `
-Please answer the following question based on the provided document.
-Question: ${input.question}
-Document: This document is provided as a data URI. Your tools should be able to process it.
-Data URI: ${input.pdfDataUri}
-`;
     
     const response = await fetch(agentUrl, {
       method: 'POST',
@@ -58,7 +51,7 @@ Data URI: ${input.pdfDataUri}
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ input: query }),
+      body: JSON.stringify({ input: { question: input.question, pdfDataUri: input.pdfDataUri } }),
     });
 
     const responseText = await response.text();
